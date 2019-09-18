@@ -2,7 +2,7 @@
 title: "headstart analysis"
 author: "Drayton et al."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: github_document
 editor_options: 
   chunk_output_type: console
 ---

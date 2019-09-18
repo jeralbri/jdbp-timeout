@@ -1,0 +1,583 @@
+---
+title: "headstart analysis"
+author: "Drayton et al."
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F)
+```
+
+Start by loading relevant packages and reading in data.
+
+```{r, include=FALSE}
+
+library(tidyverse)
+library(haven)
+library(knitr)
+library(methodsR)
+library(rlang)
+library(twang)
+library(survey)
+library(broom)
+library(writexl)
+
+set.seed(12345)
+
+tbl <- read_dta("../data/Head Start Data 2-5-15.dta")
+
+tbl <- tbl %>%
+  select(B3P_DTO, AAGE, AMOM, DEPRESS2, ENGLISH, HGCG, LANG_GR, MAGE, MRISK3, PREGNANT, PREVPRG, 
+         PREVPRGR,	PRIMEOCC, RACE, TEENMOM, ADULTS_G, LIVEARR, MALEHH, MISSCHLD, NCHLD05, NCHLD617, 
+         NMOVES,	OWNS, AFDC, AFDCR, FOODST, FOODSTR, MEDICAID, MISSPOV, PUBHSE, POV1, POV2, POV3, 
+         POV4, POVLINE, POVRATIO, SSI, SSIR, WIC, WICR, CCARE, FOOD, FOODR, HOUSING, HOUSINGR, 
+         MEDICAL, MEDICALR, MONEY, MONEYR, SUPPLIES, SUPPORT, TRANSPRT, TRANSPTR, TEEN_MOM,	
+         BL_IDLE, BL_SNGL, BL_WELF, BL_DROP, BL_5CNT, BL_5RSK, BL_3RSK, BL_HRSK,  CSEX, CHLDAGEG, 
+         C_MALE, C_MALER, CDOB, CMTHS, EARLYBTH, EARLYR, FRSTBORN, INSUR,	LT2500G, LT2500GR, 
+         STAYHOSP, BM_RISKS, CONCERNR, CONCERNS, EN_RISKS, ES_RISKS, EVAL,	EVALR, RISKS, RISKSR, 
+         B0P_CESD, B0P_DEP, B0P_CDSF, B0P_DEPS, B5P_ALCH,	B1P_PCDI, B1P_PD, B2P_PCDI, B2P_PD, 
+         B3P_PCDI, B3P_PD, B5P_DISP,	B3P_DRST,	B3P_DWRN, B3P_DWRV, B4PSPANK, B3D_CDSF, B2D_CESD, 
+         B2D_PCDI,	B2D_PD, B4HM_DATA, B4HMENVN, B5HMEXTE, B5HMINTE, B5HMLCHO, B4HMTOTL,	B5HMVERB, 
+         B4HMWARM, B5HMWARM, B5HOMET, B3P_EXPH, B3P_HRSH, B3P_INPH, B3P_WARM, B5PFDATA, B3P_CAR1,	
+         B2P_DIS, BVP_FAT1, BVP_FAT6, B2P_HLP2, BVP_LBI1, 	BVP_LBI3, BVP_MAL1, BVP_MAL6, BVP_MBI1, 
+         BVP_MBI3, BVP_NLL1,	BVP_NLL3, BVP_NLN3, BVP_NMM1, BVP_NMM3, BVP_NMN3, B3P_SUPP, B3D_SAME,	
+         B4CBCLAG, B1P_EEMO, B1P_ESOC, B5CB_AGR,  B5CB_APR, B5CB_AXR, B5CB_EXR, B5CB_INR, B5CB_RBR, 
+         B5CB_SCR, B5CB_SPR, B5CB_TPR, B5CB_WDR,	B4FSAGGR, B4FSAPPR, B4FSHYPR, B4FSPROB, B4FSWITH, 
+         B5P_ADD, B2P_COMB, B1P_EGE1, B1P_EGES,	B2P_SEN2, B2P_SEN3, B1P_VCO1, B1P_VCOM, B2P_VPR1, 
+         B5P_IEP, B5P_RETN, B5P418,	B4PCIEP, B4PSPEECH, B3B_M2FR, B3B_M2FS,	B2B_MLAN, B2B_MVSP, 
+         B3RPPVT1, B3RPPVT2, B3RPPVT3, B3RPPVT4,	B3RPPVTS, B3RTVIP2, B3RTVIPS, C4PP_DATA, C4PPVT3S, 
+         C5PPVT3S, C5PPVT85, C4TV_DATA,	C4TVIPS, C4_DATA, C4BK_DATA, C4BKCOMP, C4BKKNOW, C4WJ_DATA, 
+         C4WJAPSS, C4WJLWSS,	C4WM_DATA, C4WMAPSS, C4WMLISS, C5_DATA, C5MATHRA, C5MRSS, C5RDSIRT, 
+         C4LA_DATA, C4LASADC,	C4LASLL, C4LASLLC, C4LASLR, C4LASLRC, C4LASUL, C4LASULC, C4LASUR, 
+         C4LASURC, C4LCOGNS,	C4LEMORS, C4LT_DATA, C4LTRACT, C4LTRANX, C4LTRASC, C4LTRASE, C4LTRATT, 
+         C4LTRFEL, C4LTRORG,	C4LTRREG, C4LTRSEN, C4LTRSOC, C5_BULLY, C5_DELB, C5_FREL, C5_MREL, 
+         C5_MTR, C5C_ANGR,  C5C_PEER, C5C_SAD, C5S_DATA, C5RISK16, C5RISK3, C5RISK4, C5RSK3EQ, C5RSK3NE, 
+         C5RSKACD,	C5RSKHEI, C5RSKML, C5RSKPPM, C5RSKRTN ,C5RSKSC1, C5RSKSC2, C5RSKSC3, C5SCHEXP4, 
+         C5SUCABR,  C5SUCACD, C5SUCCES, C5SUCCES2, C5SUCPPM, C5SUCSOC, C5WT_CA_PI, C5WT_CA, B5VCPOS, 
+         B5VCNEG, B5P_EDUC, B3P_DTAC, B3D_DTAC, P2V2_ANY, B3P_CDSF, B4PCESD, B5P_CESD, B5P_SUBS, 
+         B5P_ALCH,	T4CORCRE, T5_SSRS_SC, B5P_DATA, C5WT_CA_PI, POV1, POV2, POV3, POV4, POVLINE, POVRATIO, MISSCIRC,
+         B3V3CENG, B3V3CNEG, B3V3PDET, B3P_DPRV, B3P_DPH1, B3P_DRMV, B3P_DRST, B3P_DSHO, B3P_DTHR, B3P_DTLK, B3P_DWRN, B3P_DWRV, 
+         B4PDPDET, BPDPNET, B4PDCENG, T4CISDET) %>%  
+  zap_labels()
+
+```
+
+A few variable recodes. 
+
+- Log income ratio
+- Dummy variable for "Uses Physical Violence"
+- Reverse code "Relationship with Father"
+- Create labeled factors, as necessary
+
+Also, filter to cases with grade 5 time out data only.
+
+```{r}
+
+tbl <- tbl %>%
+  mutate(INCOMERATIO = log(POVRATIO+.01),
+         PHYS        = as.numeric(B3P_DTAC == 5),
+         rev_C5_FREL = 4 - C5_FREL) %>% 
+  mutate(TEENMOM   = factor(TEENMOM, levels = 0:1, labels = c("Not Teen Mother", "Teen Mother")),
+         P2V2_ANY  = factor(P2V2_ANY, levels = 0:1, labels = c("No Services", "Received Services")),
+         B5P_SUBS  = factor(B5P_SUBS, levels = 0:1, labels = c("No SA", "Substance Abuse")),
+         RACE      = factor(RACE, levels = 1:4, labels = c("White", "Af Am", "Hispanic", "Other")),
+         B3P_DTO   = factor(B3P_DTO, levels = 0:1, labels = c("No TO", "Used TO"))) %>% 
+  mutate(B3P_DPRV  = factor(B3P_DPRV, levels = 0:1, labels = c("No Prev", "Prevent/Distract")),
+         B3P_DRMV = factor(B3P_DRMV, levels = 0:1, labels = c("No Removal", "Discipline: Remove Child/Object")),
+         B3P_DRST = factor(B3P_DRST, levels = 0:1, labels = c("No Restraint", "Discipline: Restrain")),
+         B3P_DSHO = factor(B3P_DSHO, levels = 0:1, labels = c("No Shouting", "Discipline: Shout")),
+         B3P_DTHR = factor(B3P_DTHR, levels = 0:1, labels = c("No Threaten", "Discipline: Threaten")),
+         B3P_DTLK = factor(B3P_DTLK, levels = 0:1, labels = c("No Explanation", "Talk/Explain")),
+         B3P_DWRN = factor(B3P_DWRN, levels = 0:1, labels = c("No Non-Verbal Warning", "Discipline: Warn/Remind (Non-Verbal)")),
+         B3P_DWRV = factor(B3P_DWRV, levels = 0:1, labels = c("No Verbal Warning", "Discipline: Warn/Remind (Verbal)"))) %>%
+  filter(B5P_DATA==1 & !is.na(B3P_DTO))
+
+```
+
+Declare variables and their role.
+
+```{r}
+
+dvs_36m  <- c("B3V3CENG",   # Child Engagment of Parent (3-bag)
+              "B3V3CNEG",   # Child Negativity Towards Parent (3-bag),
+              "B3V3PDET"    # Detachment (3-bag)
+              )
+
+dvs_prek <- c("T4CORCRE",   # Creative Representation (Pre-K)
+              "B4CBCLAG",   # CBCL Aggressive Behavior
+              "T4CISDET",   # Arnett Caregiver Interaction Scale detachment
+              "B4PDPDET",   # Detachment (Play-doh)
+              "BPDPNET",    # Negative Regard (Play-doh)
+              "B4PDCENG"    # Child Engagement (Play-doh)
+              )
+
+dvs_g5 <- c("B5VCPOS",    # Positivity toward Parent
+         "B5VCNEG",       # Negativity toward Parent
+         "B5CB_AXR",      # Anxious/Depressed Raw Score
+         "B5CB_RBR",      # Rule-Breaking Behavior Raw Score
+         "B5CB_AGR",      # Aggressive Behavior Raw Score
+         "B5CB_INR",      # Internalizing Raw Score
+         "B5CB_EXR",      # Externalizing Raw Score
+         "C5_FREL",       # Relationship with Dad
+         "C5_MREL",       # Relationship with Mom
+         "T5_SSRS_SC"     # Self-Control
+         )
+
+controls <- c("TEENMOM",     # Teen Mother",
+              "B5P_EDUC",    # Mother Education",
+              "P2V2_ANY",    # Receives Services",
+              "B3P_CDSF",    # Depression (36 months)",
+              "B5P_SUBS",    # Substance Abuse",
+              "B5P_ALCH",    # Level of Alcohol Abuse",
+              "INCOMERATIO", # "Income/Poverty Ratio (Log)",
+              "RACE",        # Primary caregiver's race,
+              "B3P_DPRV",    # Discipline: Prevent/Distract
+              "B3P_DRMV",    # Discipline: Remove Child/Object
+              "B3P_DRST",    # Discipline: Restrain
+              "B3P_DSHO",    # Discipline: Shout
+              "B3P_DTHR",    # Discipline: Threaten
+              "B3P_DTLK",    # Discipline: Talk/Explain
+              "B3P_DWRN",    # Discipline: Warn/Remind (Non-Verbal)
+              "B3P_DWRV",    # Discipline: Warn/Remind (Verbal)
+              "B3P_DPH1"     # Discipline: Physical Punishment
+              )
+
+tx <- "B3P_DTO" 
+
+
+```
+
+The discipline variables are based on the following description from the codebook:
+
+> Discipline Strategies--measures the parent's strategies for handling four different potential conflict situations with the
+child: 1) the child keeps playing with breakable things; 2) the child refuses to eat; 3) the child throws a temper tantrum in a public place
+4) the child hits the parent in anger (# 4 is only available at 36-Months). Parents provided open-ended answers to how they would respond
+to each of the four situations, and these responses were classified into the types of discipline strategies, which were coded as binary
+variables. A parent received a "1" for each strategy that was ever mentioned.
+
+The following are sample responses for each type of discipline:
+
+- Prevent/Distract: If parent responded "put things out of reach/distract child with activity/make new food/play a game to get him/her to eat/ give child food/ distract child/give child something to play with/hold child/hold child's hand until child is calm" in any one of the 3 or 4 scenarios then BnP_DPRV is set equal to 1.
+- Threaten: If parent responded "leave and expect child to follow/tell child parent will punish him/her at home" in any one of the 3 or 4 scenarios then BnP_DTHR is set equal to 1.
+- Shout: If parent responded "shout at child/punish child verbally/yell at child" in any one of the 3 or 4 scenarios then BnP_DSHO is set equal to 1.
+- Talk/Explain: If parent responded "tell child NO and explain why/ask child to put object down/explain importance of eating/continue to try to get child to eat, but don't force child/ talk to child" in any one of the 3 or 4 scenarios then BnP_DTLK is set equal to 1.
+- Remove Child/Object: If parent responded "take child away/stop feeding child; child is not hungry/take food away/pick up child and leave" in any one of the 3 or 4 scenarios then BnP_DRMV is set equal to 1.
+- Restrain: If parent responded to restrain child in any one of the 4 scenarios then B3P_DRST is set equal to 1.
+- Time Out: If parent responded "give child time out or quiet time/child must sit in corner" in any one of the 4 scenarios then BnP_DTO is set equal to 1.
+- Shout: If parent responded "shout at child/punish child verbally/yell at child" in any one of the 3 or 4 scenarios then BnP_DSHO is set equal to 1.
+- Warn/Remind (Verbal): If parent responded "threaten to take away treats/threaten time out when get home" in any one of the 4 scenarios then B3P_DWRV is set equal to 1. 
+- Warn/Remind (Non-Verbal): If parent responded "Tell child no and expect child to obey/ count/the "look"/stare at child" in any one of the 4 scenarios then B3P_DWRN is set equal to 1.
+
+Create a function to create cleaner tables.
+
+```{r}
+
+var_labs <- function(tbl, var){
+  
+  var <- sym(var)
+  
+  tbl %>%
+    mutate(!!var := case_when(
+      !!var == "B3V3CENG"     ~ "36 mo.: Child Engagment of Parent",
+      !!var == "B3V3CNEG"     ~ "36 mo.: Child Negativity Towards Parent",
+      !!var == "B3V3PDET"     ~ "36 mo.: Detachment",
+      !!var == "T4CORCRE"     ~ "Pre-K: Creative Representation",
+      !!var == "B4CBCLAG"     ~ "Pre-K: CBCL Aggressive Behavior",
+      !!var == "T4CISDET"     ~ "Pre-K: Arnett Caregiver Interaction Scale detachment",
+      !!var == "B4PDPDET"     ~ "Pre-K: Detachment",
+      !!var == "BPDPNET"      ~ "Pre-K: Negative Regard",
+      !!var == "B4PDCENG"     ~ "Pre-K: Child Engagement",
+      !!var == "B5VCPOS"      ~ "Grade 5: Positivity toward Parent",
+      !!var == "B5VCNEG"      ~ "Grade 5: Negativity toward Parent",
+      !!var == "B5CB_AXR"     ~ "Grade 5: Anxious/Depressed Raw Score",
+      !!var == "B3P_WARM"     ~ "Grade 5: HOMES Parental Warmth",
+      !!var == "B5CB_RBR"     ~ "Grade 5: Rule-Breaking Behavior Raw Score",
+      !!var == "B5CB_AGR"     ~ "Grade 5: Aggressive Behavior Raw Score",
+      !!var == "B5CB_INR"     ~ "Grade 5: Internalizing Raw Score",
+      !!var == "B5CB_EXR"     ~ "Grade 5: Externalizing Raw Score",
+      !!var == "C5_DELB"      ~ "Grade 5: Delinquent Behaviors",
+      !!var == "C5_FREL"      ~ "Grade 5: Relationship with Dad",
+      !!var == "C5_MREL"      ~ "Grade 5: Relationship with Mom",
+      !!var == "T5_SSRS_SC"   ~ "Grade 5: Self-Control",
+      !!var == "TEENMOM"      ~ "Teen Mother (Baseline Survey)",
+      !!var == "B5P_EDUC"     ~ "Grade 5: Mother Education",
+      !!var == "P2V2_ANY"     ~ "Receives Services (Any Study Year)",
+      !!var == "B3P_CDSF"     ~ "36 mo.: Depression",
+      !!var == "B5P_SUBS"     ~ "Grade 5: Substance Abuse",
+      !!var == "B5P_ALCH"     ~ "Grade 5: Level of Alcohol Abuse",
+      !!var == "INCOMERATIO"  ~ "Income/Poverty Ratio (Log) (Baseline Survey)",
+      !!var == "RACE"         ~ "Primary Caregiver's Race (Baseline Survey)",
+      !!var == "B3P_DPRV"     ~ "36 mo.: Discipline - Prevent/Distract",
+      !!var == "B3P_DRMV"     ~ "36 mo.: Discipline - Remove Child/Object",
+      !!var == "B3P_DRST"     ~ "36 mo.: Discipline - Restrain",
+      !!var == "B3P_DSHO"     ~ "36 mo.: Discipline - Shout",
+      !!var == "B3P_DTHR"     ~ "36 mo.: Discipline - Threaten",
+      !!var == "B3P_DTLK"     ~ "36 mo.: Discipline - Talk/Explain",
+      !!var == "B3P_DWRN"     ~ "36 mo.: Discipline - Warn/Remind (Non-Verbal)",
+      !!var == "B3P_DWRV"     ~ "36 mo.: Discipline - Warn/Remind (Verbal)",
+      !!var == "B3P_DPH1"     ~ "36 mo.: Discipline - Physical Punishment",
+      !!var == "B3P_DTOUsed TO"            ~ "Used Time-Out",
+      !!var == "TEENMOMTeen Mother"        ~ "Teen Mother",
+      !!var == "P2V2_ANYReceived Services" ~ "Received Services (Any Study Year)",
+      !!var == "B5P_SUBSSubstance Abuse"   ~ "Grade 5: Parent Substance Abuse",
+      !!var == "RACEAf Am"                 ~ "African American",
+      !!var == "RACEHispanic"              ~ "Hispanic",
+      !!var == "RACEOther"                 ~ "Other Race",
+      !!var == "B3P_DPRVPrevent/Distract"  ~ "36 mo.: Discipline - Prevent/Distract",
+      !!var == "B3P_DRMVDiscipline: Remove Child/Object"       ~ "36 mo.: Discipline - Remove Child/Object",
+      !!var == "B3P_DRSTDiscipline: Restrain"                  ~ "36 mo.: Discipline - Restrain",
+      !!var == "B3P_DSHODiscipline: Shout"                     ~ "36 mo.: Discipline - Shout",
+      !!var == "B3P_DTHRDiscipline: Threaten"                  ~ "36 mo.: Discipline - Threaten",
+      !!var == "B3P_DTLKTalk/Explain"                          ~ "36 mo.: Discipline - Talk/Explain",
+      !!var == "B3P_DWRNDiscipline: Warn/Remind (Non-Verbal)"  ~ "36 mo.: Discipline - Warn/Remind (Non-Verbal)",
+      !!var == "B3P_DWRVDiscipline: Warn/Remind (Verbal)"      ~ "36 mo.: Discipline - Warn/Remind (Verbal)",
+      TRUE ~ !!var))
+
+}
+
+```
+
+
+## Descriptive Statistics
+
+First, Table 1 (Controls)
+
+```{r}
+
+tbl_controls <- tbl %>%
+  summary_all(variables = controls) %>%
+  var_labs("Variable")
+
+tbl_controls_tx <- tbl %>%
+  summary_all(treatment = tx, variables = controls) %>%
+  var_labs("Variable")
+
+tbl_controls_mw <- tbl %>%
+  summary_all(treatment = tx, variables = controls, cont_function = summary_median_IQR) %>%
+  filter(nchar(`No TO (N=998)`) > 0 & nchar(`P Value`) > 0) %>%
+  var_labs("Variable") %>%
+  dplyr::select(Variable, `Mann-Whitney p` = `P Value`)
+  
+control_tbl <- tbl_controls %>%
+  left_join(tbl_controls_tx, by = c("Variable", "Label")) %>%
+  left_join(tbl_controls_mw, by = "Variable") %>%
+  mutate(`Mann-Whitney p` = ifelse(is.na(`Mann-Whitney p`), "", `Mann-Whitney p`)) %>%
+  dplyr::rename(`All Cases` = Statistics)
+
+kable(control_tbl)
+
+```
+
+36 Month Outcomes.
+
+```{r}
+
+tbl_36m  <- tbl %>%
+  summary_all(variables = dvs_36m) %>%
+  var_labs("Variable")
+
+tbl__36m_tx  <- tbl %>%
+  summary_all(treatment = tx, variables = dvs_36m) %>%
+  var_labs("Variable")
+
+tbl_36m_mw <- tbl %>%
+  summary_all(treatment = tx, variables = dvs_36m, cont_function = summary_median_IQR) %>%
+  filter(nchar(`No TO (N=998)`) > 0 & nchar(`P Value`) > 0) %>%
+  var_labs("Variable") %>%
+  dplyr::select(Variable, `Mann-Whitney p` = `P Value`)
+
+
+dv_36m_tbl <- tbl_36m %>%
+  left_join(tbl__36m_tx, by = c("Variable"))  %>%
+  left_join(tbl_36m_mw, by = "Variable") %>%
+  mutate(`Mann-Whitney p` = ifelse(is.na(`Mann-Whitney p`), "", `Mann-Whitney p`)) %>%
+  dplyr::rename(`All Cases` = `Mean (SD)`)
+
+kable(dv_36m_tbl)
+
+```
+
+Pre-K.
+
+```{r}
+
+tbl_prek  <- tbl %>%
+  summary_all(variables = dvs_prek) %>%
+  var_labs("Variable")
+
+tbl_prek_tx  <- tbl %>%
+  summary_all(treatment = tx, variables = dvs_prek) %>%
+  var_labs("Variable")
+
+tbl_prek_mw <- tbl %>%
+  summary_all(treatment = tx, variables = dvs_prek, cont_function = summary_median_IQR) %>%
+  filter(nchar(`No TO (N=998)`) > 0 & nchar(`P Value`) > 0) %>%
+  var_labs("Variable") %>%
+  dplyr::select(Variable, `Mann-Whitney p` = `P Value`)
+
+
+dv_prek_tbl <- tbl_prek %>%
+  left_join(tbl_prek_tx, by = c("Variable"))  %>%
+  left_join(tbl_prek_mw, by = "Variable") %>%
+  mutate(`Mann-Whitney p` = ifelse(is.na(`Mann-Whitney p`), "", `Mann-Whitney p`)) %>%
+  dplyr::rename(`All Cases` = `Mean (SD)`)
+
+kable(dv_prek_tbl)
+
+```
+
+Grade 5.
+
+```{r}
+
+tbl_g5  <- tbl %>%
+  summary_all(variables = dvs_g5) %>%
+  var_labs("Variable")
+
+tbl_g5_tx  <- tbl %>%
+  summary_all(treatment = tx, variables = dvs_g5) %>%
+  var_labs("Variable")
+
+
+tbl_g5_mw <- tbl %>%
+  summary_all(treatment = tx, variables = dvs_g5, cont_function = summary_median_IQR) %>%
+  filter(nchar(`No TO (N=998)`) > 0 & nchar(`P Value`) > 0) %>%
+  var_labs("Variable") %>%
+  dplyr::select(Variable, `Mann-Whitney p` = `P Value`)
+
+
+dv_g5_tbl <- tbl_g5 %>%
+  left_join(tbl_g5_tx, by = c("Variable"))  %>%
+  left_join(tbl_g5_mw, by = "Variable") %>%
+  mutate(`Mann-Whitney p` = ifelse(is.na(`Mann-Whitney p`), "", `Mann-Whitney p`)) %>%
+  dplyr::rename(`All Cases` = `Mean (SD)`)
+
+kable(dv_g5_tbl)
+
+```
+
+## Graphical Display
+
+Get boxplots.
+
+```{r}
+
+tbl_long <- tbl %>%
+  select(tx, dvs_36m, dvs_prek, dvs_g5) %>%
+  gather(Variable, Value, B3V3CENG:T5_SSRS_SC) %>%
+  var_labs("Variable") %>%
+  mutate(Variable = as.factor(Variable)) %>%
+  mutate(Variable = fct_relevel(Variable, "36 mo.: Child Engagment of Parent",
+                                                     "36 mo.: Child Negativity Towards Parent",
+                                                     "36 mo.: Detachment",
+                                                     "Pre-K: Arnett Caregiver Interaction Scale detachment",
+                                                     "Pre-K: CBCL Aggressive Behavior",
+                                                     "Pre-K: Child Engagement",
+                                                     "Pre-K: Creative Representation",
+                                                     "Pre-K: Detachment",
+                                                     "Pre-K: Negative Regard",
+                                                     "Grade 5: Aggressive Behavior Raw Score",
+                                                     "Grade 5: Anxious/Depressed Raw Score",
+                                                     "Grade 5: Delinquent Behaviors",
+                                                     "Grade 5: Externalizing Raw Score",
+                                                     "Grade 5: Internalizing Raw Score",
+                                                     "Grade 5: Negativity toward Parent",
+                                                     "Grade 5: Positivity toward Parent",
+                                                     "Grade 5: Relationship with Dad",
+                                                     "Grade 5: Relationship with Mom",
+                                                     "Grade 5: Rule-Breaking Behavior Raw Score",
+                                                     "Grade 5: Self-Control"))
+
+tbl_long %>%
+  ggplot(aes(x = B3P_DTO, y = Value)) + geom_boxplot(fill = "firebrick") + 
+  facet_wrap(~Variable, ncol = 4, scale = "free_y") +
+  labs(x = "")
+
+```
+
+
+## Log Transforms
+
+Most of the outcomes are skewed, so they are log transformed.  Mother and Father relationships at grade 5 have a negative skew, so they are reverse-coded first.
+
+```{r}
+
+tbl <- tbl %>%
+  mutate(C5_FREL = 4 - C5_FREL,
+         C5_MREL = 4 - C5_MREL) %>%
+  mutate_at(c(dvs_36m, dvs_prek, dvs_g5), ~log(.+.01))
+
+
+
+```
+
+
+## PS Weighting
+
+Drop missing values.
+
+```{r}
+
+tbl2match <- tbl %>%
+  select(tx, controls, dvs_36m, dvs_prek, dvs_g5) %>% 
+  na.omit() %>%
+  mutate(B3P_DTO = as.numeric(B3P_DTO == "Used TO"))
+  
+```
+
+Get PS weights.
+
+```{r}
+
+tbl <- tbl %>%
+  mutate(num_to = as.numeric(B3P_DTO == "Used TO")) %>%
+  as.data.frame()
+
+ps_out <- ps(as.formula(paste("num_to", "~", paste(controls, collapse = " + "))),
+                     data = tbl,
+             interaction.depth=2,
+            estimand = "ATE",
+               verbose = F,
+               stop.method = "ks.mean",
+               n.trees = 2000)
+
+plot(ps_out)
+
+```
+
+Review balance.
+
+```{r}
+
+summary(ps_out)
+
+plot(ps_out, plots = 3)
+
+```
+
+Declare weights.
+
+```{r}
+
+tbl <- tbl %>%
+  mutate(wt = get.weights(ps_out, stop.method = "ks.mean"))
+
+design_ps <- svydesign(ids = ~1, weights = ~ wt, data = tbl)
+
+```
+
+Get ATEs.
+
+```{r}
+
+get_ate <- function(dv, tx, dsn) {
+  
+  form <- formula(paste(dv,"~", tx))
+  
+  svyglm(form, design = dsn) %>%
+    tidy %>%
+    filter(term != "(Intercept)") %>%
+    mutate(Variable = dv) %>%
+    mutate_if(is.numeric, ~round(., 3))  %>%
+    mutate(p = if_else(p.value < .001, "< 0.001", as.character(p.value))) %>%
+    dplyr::select(Variable, term, ATE = estimate, SE = std.error, t = statistic, p)
+  
+}
+
+
+ates <- map_df(c(dvs_36m, dvs_prek, dvs_g5), ~get_ate(.x, tx = "B3P_DTO", dsn = design_ps)) %>%
+  var_labs("Variable") %>%
+  dplyr::select(-term) 
+
+kable(ates, align = c("l", rep("c",4)))
+
+```
+
+
+## Regression
+
+Write function to clean regression results.
+
+```{r}
+
+
+get_reg <- function(dv, tx, controls) {
+  
+  form <- formula(paste(dv,"~", paste(c(tx, controls), collapse = " + ")))
+  
+  lm(form, data = tbl) %>%
+    tidy %>%
+    filter(term == "B3P_DTOUsed TO") %>%
+    mutate(Variable = dv) %>%
+    mutate_if(is.numeric, ~round(., 3))  %>%
+    mutate(p = if_else(p.value < .001, "< 0.001", as.character(p.value))) %>%
+    dplyr::select(Variable, term, B = estimate, SE = std.error, t = statistic, p)
+  
+}
+
+
+```
+
+Map over outcomes.
+
+```{r}
+
+regs <- map_df(c(dvs_36m, dvs_prek, dvs_g5), ~get_reg(.x, tx = "B3P_DTO", controls = controls)) %>%
+  var_labs("Variable") %>%
+  dplyr::select(-term)
+
+kable(regs)
+
+```
+
+Present the full regression results for reference.
+
+```{r}
+
+get_full_reg <- function(dv, tx, controls) {
+  
+  dv   <- sym(dv)
+  
+  form <- formula(paste(dv,"~", paste(c(tx, controls), collapse = " + ")))
+  
+  lm(form, data = tbl) %>%
+    tidy %>%
+    mutate_if(is.numeric, ~round(., 3))  %>%
+    mutate(!!dv := case_when(
+      p.value < 0.001 ~ paste0(estimate, "***", " (", std.error, ")"),
+      p.value < 0.01  ~ paste0(estimate, "**", " (", std.error, ")"),
+      p.value < 0.05  ~ paste0(estimate, "*", " (", std.error, ")"),
+      TRUE            ~ paste0(estimate, " (", std.error, ")")
+    )) %>%
+    select(Term = term, !!dv)
+
+}
+
+
+full_regs <- map(c(dvs_36m, dvs_prek, dvs_g5), ~get_full_reg(.x, tx = "B3P_DTO", controls = controls)) %>%
+  reduce(full_join, by = "Term") %>%
+  gather(Variable, Value, B3V3CENG:T5_SSRS_SC) %>%
+  var_labs("Variable") %>%
+  spread(Variable, Value) %>%
+  var_labs("Term")
+
+kable(full_regs)
+
+```
+
+## Write out tables
+
+```{r}
+
+write_xlsx(list(`Control Desc` = control_tbl,
+           `36m Desc`     = dv_36m_tbl,
+           `Pre-K Desc`   = dv_prek_tbl,
+           `G5 Desc`      = dv_g5_tbl,
+           `ATEs`         = ates,
+           `Regressions`  = regs),
+           path = "tables.xlsx")
+
+```

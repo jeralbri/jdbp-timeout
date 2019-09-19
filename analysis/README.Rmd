@@ -1,6 +1,6 @@
 ---
-title: "headstart analysis"
-author: "Drayton et al."
+title: "Data Cleaning and Analysis for JDBP Time-Out Manuscript"
+author: "Knight et al."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: github_document
 editor_options: 

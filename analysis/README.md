@@ -1,6 +1,6 @@
-headstart analysis
+Data Cleaning and Analysis for JDBP Time-Out Manuscript
 ================
-Drayton et al.
+Knight et al.
 18 September, 2019
 
 Start by loading relevant packages and reading in data.
